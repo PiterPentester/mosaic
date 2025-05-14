@@ -3,13 +3,14 @@
 A blazing-fast, real-time network monitoring dashboard written in Go. Mosaic pings hundreds of hosts in parallel and visualizes their status on a web dashboard.
 
 ![Mosaic Dashboard Screenshot](demo.png)
+![Mosaic Dashboard Screenshot Loss](demo_loss.png)
 
 ---
 
 ## ✨ Features
 - **Parallel Pinging:** Continuously pings hundreds of hosts in parallel using raw ICMP (requires NET_RAW capability)
 - **Real-Time Web Dashboard:** Mosaic-style grid, each cell shows host status and latency
-- **Color Coded:** Green (online), Red (offline), Yellow (slow)
+- **Color Coded:** Green (online/0% loss), Red (offline/high loss), Yellow (slow/low loss)
 - **Live Tooltips:** Hover over a cell to see the host name
 - **Flexible Targets:** Load hosts from a file or CLI
 - **Lightweight:** Ultra-minimal Docker image (FROM scratch), single Go binary, no dependencies for frontend
@@ -43,6 +44,12 @@ go build -o mosaic main.go
   ```
   (You may need to install setcap: `sudo apt-get install libcap2-bin`)
 
+#### Show Cumulative Packet Loss Instead of Latency
+Add the `--show-loss` flag to show cumulative packet loss (%) since the app started (not just the most recent interval):
+```bash
+sudo ./mosaic --hosts=8.8.8.8,1.1.1.1,localhost --show-loss
+```
+
 #### macOS
 - macOS does **not** support setcap. You must use sudo/root:
   ```bash
@@ -50,6 +57,9 @@ go build -o mosaic main.go
   ```
   ```bash
   sudo ./mosaic --file=hosts.txt
+  ```
+  ```bash
+  sudo ./mosaic --file=hosts.txt --show-loss
   ```
 
 ---
@@ -69,6 +79,11 @@ docker run --rm -p 8080:8080 --cap-add=NET_RAW mosaic-ping --hosts=8.8.8.8,1.1.1
 Or with a hosts file:
 ```bash
 docker run --rm -p 8080:8080 --cap-add=NET_RAW -v $PWD/hosts.txt:/app/hosts.txt mosaic-ping --file=hosts.txt
+```
+
+Or with a hosts file and cumulative packet loss:
+```bash
+docker run --rm -p 8080:8080 --cap-add=NET_RAW -v $PWD/hosts.txt:/app/hosts.txt mosaic-ping --file=hosts.txt --show-loss
 ```
 
 ---
@@ -93,6 +108,7 @@ Access the dashboard at http://\<node-ip\>:30080
   - 🟥 Red: Host is down
 - **Tooltip:** Hover to see the host name
 - **Live:** Updates every 2 seconds
+- **Cumulative Packet Loss:** Use `--show-loss` to see % loss since app start (not just per interval)
 
 ---
 
