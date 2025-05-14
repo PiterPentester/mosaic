@@ -49,21 +49,29 @@
     const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
     const ws = new WebSocket(wsProtocol + '//' + location.host + '/ws');
     let hosts = [];
-    function render(statuses) {
+    function render(statuses, showLoss) {
       const mosaic = document.getElementById('mosaic');
       mosaic.innerHTML = '';
       statuses.forEach(stat => {
-        let cls = 'tile ' + (stat.alive ? (stat.latency_ms > 150 ? 'slow' : 'up') : 'down');
-        let latency = stat.alive ? stat.latency_ms + ' ms' : 'DOWN';
+        let value, cls;
+        if (showLoss) {
+          value = stat.alive ? stat.packet_loss.toFixed(0) + ' %' : '100 %';
+          if (!stat.alive || stat.packet_loss >= 20) cls = 'tile down';
+          else if (stat.packet_loss > 0) cls = 'tile slow';
+          else cls = 'tile up';
+        } else {
+          value = stat.alive ? stat.latency_ms + ' ms' : 'DOWN';
+          cls = 'tile ' + (stat.alive ? (stat.latency_ms > 150 ? 'slow' : 'up') : 'down');
+        }
         let tile = document.createElement('div');
         tile.className = cls;
-        tile.innerHTML = `<span>${latency}</span><div class='tooltip'>${stat.host}</div>`;
+        tile.innerHTML = `<span>${value}</span><div class='tooltip'>${stat.host}</div>`;
         mosaic.appendChild(tile);
       });
     }
     ws.onmessage = function(event) {
       let data = JSON.parse(event.data);
-      render(data.statuses);
+      render(data.statuses, data.show_loss);
     };
   </script>
 </body>
