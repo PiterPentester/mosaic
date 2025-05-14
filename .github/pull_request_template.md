@@ -14,6 +14,10 @@
 
 <!-- List any related issues, e.g. Fixes #123 -->
 
+## Screenshots (if relevant)
+
+<!-- Add screenshots or GIFs to help reviewers understand your changes. -->
+
 ## Additional Notes
 
 <!-- Any other information reviewers should be aware of. -->
