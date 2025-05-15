@@ -35,31 +35,31 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mosaic.exe
-          path: ./mosaic.exe
+          path: mosaic.exe
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: mosaic-mac-amd64
-          path: ./mosaic-mac-amd64
+          path: mosaic-mac-amd64
 
       - name: Upload macOS arm64 artifact
         uses: actions/upload-artifact@v4
         with:
           name: mosaic-mac-arm64
-          path: ./mosaic-mac-arm64
+          path: mosaic-mac-arm64
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
           name: mosaic-linux-amd64
-          path: ./mosaic-linux-amd64
+          path: mosaic-linux-amd64
 
       - name: Upload Linux arm64 artifact
         uses: actions/upload-artifact@v4
         with:
           name: mosaic-linux-arm64
-          path: ./mosaic-linux-arm64
+          path: mosaic-linux-arm64
 
   release:
     needs: build
@@ -68,17 +68,17 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          path: .
+          path: ./artifacts
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.tag }}
           files: |
-            mosaic.exe
-            mosaic-mac-amd64
-            mosaic-mac-arm64
-            mosaic-linux-amd64
-            mosaic-linux-arm64
+            ./artifacts/**/mosaic.exe
+            ./artifacts/**/mosaic-mac-amd64
+            ./artifacts/**/mosaic-mac-arm64
+            ./artifacts/**/mosaic-linux-amd64
+            ./artifacts/**/mosaic-linux-arm64
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_RELEASE }}
