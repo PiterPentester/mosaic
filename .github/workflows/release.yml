@@ -23,13 +23,26 @@ jobs:
 
       - name: Build binary
         run: |
-          GOOS=linux GOARCH=${{ matrix.goarch }} CGO_ENABLED=0 go build -o mosaic-${{ matrix.goarch }} main.go
+          if [[ "${{ matrix.goarch }}" == "windows/amd64" ]]; then
+            GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o mosaic.exe main.go
+          elif [[ "${{ matrix.goarch }}" == "darwin/amd64" ]]; then
+            GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -o mosaic main.go
+          elif [[ "${{ matrix.goarch }}" == "darwin/arm64" ]]; then
+            GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -o mosaic main.go
+          else
+            GOOS=linux GOARCH=${{ matrix.goarch }} CGO_ENABLED=0 go build -o mosaic-${{ matrix.goarch }} main.go
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: mosaic-${{ matrix.goarch }}
-          path: mosaic-${{ matrix.goarch }}
+          path: |
+            {{#if (eq matrix.goarch 'windows/amd64')}}
+              mosaic.exe
+            {{else}}
+              mosaic-${{ matrix.goarch }}
+            {{/if}}
 
   release:
     needs: build
