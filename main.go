@@ -38,6 +38,7 @@ var (
 	clients   = make(map[*websocket.Conn]bool)
 	hostStatsMu sync.Mutex
 	hostStats = make(map[string]*HostStats)
+	dashboardHTML string
 )
 
 func readHosts(file string, cliHosts string) []string {
@@ -148,6 +149,15 @@ func wsHandler(ws *websocket.Conn) {
 	}
 }
 
+func init() {
+	// Read dashboard.html at compile time
+	content, err := os.ReadFile("dashboard.html")
+	if err != nil {
+		log.Fatalf("Failed to read dashboard.html: %v", err)
+	}
+	dashboardHTML = string(content)
+}
+
 func main() {
 	file := flag.String("file", "", "File with hosts (one per line)")
 	hostsArg := flag.String("hosts", "", "Comma-separated hosts")
@@ -161,7 +171,8 @@ func main() {
 
 	http.Handle("/ws", websocket.Handler(wsHandler))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "dashboard.html")
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(dashboardHTML))
 	})
 
 	go pingLoop(*showLoss)
