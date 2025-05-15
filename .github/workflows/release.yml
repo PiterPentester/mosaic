@@ -63,16 +63,16 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          path: ./artifacts
+          path: .
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ./artifacts/mosaic-windows.exe
-            ./artifacts/mosaic-mac-amd64
-            ./artifacts/mosaic-mac-arm64
-            ./artifacts/mosaic-linux-amd64
-            ./artifacts/mosaic-linux-arm64
+            mosaic-windows.exe
+            mosaic-mac-amd64
+            mosaic-mac-arm64
+            mosaic-linux-amd64
+            mosaic-linux-arm64
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_RELEASE }}
