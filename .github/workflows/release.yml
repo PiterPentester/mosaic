@@ -9,9 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        goarch: [amd64, arm64]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,11 +31,11 @@ jobs:
         with:
           name: mosaic-binaries
           path: |
-            ./artifacts/mosaic.exe
-            ./artifacts/mosaic-mac-amd64
-            ./artifacts/mosaic-mac-arm64
-            ./artifacts/mosaic-linux-amd64
-            ./artifacts/mosaic-linux-arm64
+            ./mosaic.exe
+            ./mosaic-mac-amd64
+            ./mosaic-mac-arm64
+            ./mosaic-linux-amd64
+            ./mosaic-linux-arm64
 
   release:
     needs: build
