@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        goarch: [linux/amd64, linux/arm64, darwin/amd64, darwin/arm64, windows/amd64]
+        goarch: [amd64, arm64]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,26 +23,22 @@ jobs:
 
       - name: Build binary
         run: |
-          if [[ "${{ matrix.goarch }}" == "windows/amd64" ]]; then
-            GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o mosaic.exe main.go
-          elif [[ "${{ matrix.goarch }}" == "darwin/amd64" ]]; then
-            GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -o mosaic main.go
-          elif [[ "${{ matrix.goarch }}" == "darwin/arm64" ]]; then
-            GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -o mosaic main.go
-          else
-            GOOS=linux GOARCH=${{ matrix.goarch }} CGO_ENABLED=0 go build -o mosaic-${{ matrix.goarch }} main.go
-          fi
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o mosaic.exe main.go
+          GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -o mosaic-mac-amd64 main.go
+          GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -o mosaic-mac-arm64 main.go
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o mosaic-linux-amd64 main.go
+          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o mosaic-linux-arm64 main.go
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mosaic-${{ matrix.goarch }}
+          name: mosaic-binaries
           path: |
-            {{#if (eq matrix.goarch 'windows/amd64')}}
-              mosaic.exe
-            {{else}}
-              mosaic-${{ matrix.goarch }}
-            {{/if}}
+            ./artifacts/mosaic.exe
+            ./artifacts/mosaic-mac-amd64
+            ./artifacts/mosaic-mac-arm64
+            ./artifacts/mosaic-linux-amd64
+            ./artifacts/mosaic-linux-arm64
 
   release:
     needs: build
