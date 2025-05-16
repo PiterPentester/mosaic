@@ -25,41 +25,49 @@ jobs:
 
       - name: Build binary
         run: |
-          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o mosaic.exe main.go
-          GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -o mosaic-mac-amd64 main.go
-          GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -o mosaic-mac-arm64 main.go
-          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o mosaic-linux-amd64 main.go
-          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o mosaic-linux-arm64 main.go
+          # Create build directory
+          mkdir -p build
+          
+          # Windows
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o build/mosaic.exe .
+          
+          # macOS
+          GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -o build/mosaic-mac-amd64 .
+          GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -o build/mosaic-mac-arm64 .
+          
+          # Linux
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o build/mosaic-linux-amd64 .
+          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o build/mosaic-linux-arm64 .
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: mosaic.exe
-          path: mosaic.exe
+          path: build/mosaic.exe
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
-        with:
+        with: 
           name: mosaic-mac-amd64
-          path: mosaic-mac-amd64
+          path: build/mosaic-mac-amd64
 
       - name: Upload macOS arm64 artifact
         uses: actions/upload-artifact@v4
         with:
           name: mosaic-mac-arm64
-          path: mosaic-mac-arm64
+          path: build/mosaic-mac-arm64
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
           name: mosaic-linux-amd64
-          path: mosaic-linux-amd64
+          path: build/mosaic-linux-amd64
 
       - name: Upload Linux arm64 artifact
         uses: actions/upload-artifact@v4
         with:
           name: mosaic-linux-arm64
-          path: mosaic-linux-arm64
+          path: build/mosaic-linux-arm64
 
   release:
     needs: build
