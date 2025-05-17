@@ -23,7 +23,7 @@ A blazing-fast, real-time network monitoring dashboard written in Go. Mosaic pin
 ```bash
 git clone https://github.com/PiterPentester/mosaic.git
 cd mosaic
-go build -o mosaic main.go
+go build -o mosaic .
 ```
 
 ### 2. Run the Server (requires NET_RAW capability or run as root)
@@ -122,6 +122,7 @@ Access the dashboard at http://\<node-ip\>:30080
 ## 📦 Project Structure
 ```
 main.go             # Go backend (ping logic, websocket, server)
+dashboard.go        # Dashboard logic
 dashboard.html      # Web dashboard UI
 hosts.txt           # (optional) List of hosts
 Dockerfile          # Multi-stage, minimal Docker build
