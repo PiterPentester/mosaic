@@ -1,4 +1,4 @@
-name: Release Binaries
+name: Docker CI
 
 on:
   push:
