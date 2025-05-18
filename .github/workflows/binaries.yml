@@ -58,6 +58,6 @@ jobs:
         with:
           tag_name: ${{ github.event.inputs.tag }}
           files: |
-            ./artifacts/**/mosaic-${{ matrix.goos }}-${{ matrix.goarch }}
+            ./artifacts/**/mosaic-*
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_RELEASE }}
