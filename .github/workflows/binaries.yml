@@ -10,6 +10,13 @@ on:
         description: 'Release tag (e.g., v1.0.0)'
         required: true
         default: 'v1.0.0'
+    strategy:
+      matrix:
+        goos: [linux, windows, darwin] # the required OSs
+        goarch: [amd64, arm64] # the required architectures
+        exclude: # exclude some OSs and architectures
+          - goarch: arm64
+            goos: windows
 
 jobs:
   build:
@@ -28,46 +35,14 @@ jobs:
           # Create build directory
           mkdir -p build
           
-          # Windows
-          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o build/mosaic.exe .
+          # Build binary
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CGO_ENABLED=0 go build -o build/mosaic-${{ matrix.goos }}-${{ matrix.goarch }} .
           
-          # macOS
-          GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -o build/mosaic-mac-amd64 .
-          GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -o build/mosaic-mac-arm64 .
-          
-          # Linux
-          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o build/mosaic-linux-amd64 .
-          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o build/mosaic-linux-arm64 .
-
-      - name: Upload Windows artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mosaic.exe
-          path: build/mosaic.exe
-
-      - name: Upload macOS artifact
-        uses: actions/upload-artifact@v4
-        with: 
-          name: mosaic-mac-amd64
-          path: build/mosaic-mac-amd64
-
-      - name: Upload macOS arm64 artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: mosaic-mac-arm64
-          path: build/mosaic-mac-arm64
-
-      - name: Upload Linux artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: mosaic-linux-amd64
-          path: build/mosaic-linux-amd64
-
-      - name: Upload Linux arm64 artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: mosaic-linux-arm64
-          path: build/mosaic-linux-arm64
+          name: mosaic-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: build/mosaic-${{ matrix.goos }}-${{ matrix.goarch }}
 
   release:
     needs: build
@@ -83,10 +58,6 @@ jobs:
         with:
           tag_name: ${{ github.event.inputs.tag }}
           files: |
-            ./artifacts/**/mosaic.exe
-            ./artifacts/**/mosaic-mac-amd64
-            ./artifacts/**/mosaic-mac-arm64
-            ./artifacts/**/mosaic-linux-amd64
-            ./artifacts/**/mosaic-linux-arm64
+            ./artifacts/**/mosaic-${{ matrix.goos }}-${{ matrix.goarch }}
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_RELEASE }}
