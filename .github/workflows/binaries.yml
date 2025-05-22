@@ -13,51 +13,11 @@ on:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        goos: [linux, windows, darwin] # the required OSs
-        goarch: [amd64, arm64] # the required architectures
-        exclude: # exclude some OSs and architectures
-          - goarch: arm64
-            goos: windows
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.24'
-
-      - name: Build binary
+      - name: Build, test and release
         run: |
-          # Create build directory
-          mkdir -p build
-          
-          # Build binary
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CGO_ENABLED=0 go build -o build/mosaic-${{ matrix.goos }}-${{ matrix.goarch }} .
-          
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: mosaic-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: build/mosaic-${{ matrix.goos }}-${{ matrix.goarch }}
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.event.inputs.tag }}
-          files: |
-            ./artifacts/**/mosaic-*
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT_RELEASE }}
+          make release TAG=${{ github.event.inputs.tag }} TOKEN=${{ secrets.PAT_RELEASE }}
