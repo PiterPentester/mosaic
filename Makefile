@@ -77,7 +77,7 @@ release: build
 	@if [ -z "$(TAG)" ]; then \
 		echo "Error: TAG variable is not set. Please specify a tag (e.g., make release TAG=v1.0.0)"; \
 		exit 1; \
-	}
+	fi
 	@if [ -n "$(TOKEN)" ]; then \
 		echo "Authenticating with GitHub CLI using GITHUB_TOKEN..."; \
 		echo "$(TOKEN)" | gh auth login --with-token; \
@@ -89,4 +89,36 @@ release: build
 	gh release create $(TAG) --title "Release $(TAG)" --notes "Automated release for $(TAG)" $(BUILD_DIR)/$(BINARY_NAME)-*
 	@echo "Release $(TAG) created and binaries uploaded."
 
-.PHONY: all prepare_env test build clean release
+# Docker related targets
+# Define variables
+REGISTRY = ghcr.io
+IMAGE_NAME = piterpentester/mosaic
+TAG ?= latest # Default tag if not provided
+
+# Log in to the container registry (requires DOCKER_USERNAME and DOCKER_PASSWORD env vars)
+docker-login:
+	@echo "Logging in to $(REGISTRY)..."
+	@echo "$$DOCKER_PASSWORD" | docker login $(REGISTRY) -u $$DOCKER_USERNAME --password-stdin
+
+# Set up QEMU for multi-architecture support
+setup-qemu:
+	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+# Set up Docker Buildx
+setup-buildx:
+	docker buildx create --name mybuilder --use || true
+	docker buildx inspect --bootstrap
+
+# Build Docker image for multiple platforms
+docker-build: setup-qemu setup-buildx
+	docker buildx build --platform linux/amd64,linux/arm64 --tag $(REGISTRY)/$(IMAGE_NAME):$(TAG) .
+
+# Build and push Docker image for multiple platforms
+docker-build-push: setup-qemu setup-buildx docker-login
+	docker buildx build --platform linux/amd64,linux/arm64 --tag $(REGISTRY)/$(IMAGE_NAME):$(TAG) --push .
+
+# Clean up Buildx builder
+docker-clean:
+	docker buildx rm mybuilder || true
+
+.PHONY: all prepare_env test build clean release docker-login setup-qemu setup-buildx docker-build docker-build-push docker-clean
