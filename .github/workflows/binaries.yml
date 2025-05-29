@@ -20,4 +20,4 @@ jobs:
 
       - name: Build, test and release
         run: |
-          make release TAG=${{ github.event.inputs.tag }} TOKEN=${{ secrets.PAT_RELEASE }}
+          make release TAG=${{ github.ref_name }} TOKEN=${{ secrets.PAT_RELEASE }}
